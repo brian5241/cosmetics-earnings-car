@@ -44,7 +44,7 @@ UNIVERSE = [
 # 주가는 이벤트 시작보다 1년 앞서 확보해야 한다.
 EVENT_START = "2022-09-01"   # 첫 실적발표 이벤트 예상 시점
 PRICE_START = "2021-06-01"   # 주가 수집 시작 (베타 추정용 여유분 포함)
-TODAY       = "2026-08-12"
+TODAY       = "2026-08-21"
 
 # 경로
 ROOT     = Path(__file__).resolve().parent.parent
