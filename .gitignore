@@ -9,9 +9,11 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 
-# 수집 원본 및 캐시 (재현 가능하므로 저장소에 두지 않는다)
+# 수집 원본과 캐시 — 스크립트로 다시 받을 수 있다
 data/raw/
 data/cache/
+
+# SQLite DB — sql/*.sql 과 14_build_db.py 로 언제든 재생성된다
 *.db
 *.sqlite
 *.sqlite3
@@ -20,6 +22,3 @@ data/cache/
 Thumbs.db
 Desktop.ini
 .DS_Store
-
-# 생성된 보고서 (스크립트로 재생성 가능)
-report.html

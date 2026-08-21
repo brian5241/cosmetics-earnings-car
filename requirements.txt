@@ -1,0 +1,25 @@
+# Python 3.12 에서 검증됨
+#
+# 설치:  pip install -r requirements.txt
+#
+# 하한만 지정했다. 여기 적힌 버전에서 실제로 동작을 확인했고,
+# 그보다 낮은 버전에서는 검증하지 않았다는 뜻이다.
+
+# 데이터 처리
+pandas>=2.3
+numpy>=2.0
+
+# 통계 · 모델링
+statsmodels>=0.14
+scikit-learn>=1.5
+
+# 시각화
+matplotlib>=3.9
+
+# 데이터 수집
+pykrx>=1.2
+finance-datareader>=0.9.2
+requests>=2.31
+
+# 설정
+python-dotenv>=1.0

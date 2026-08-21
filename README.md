@@ -201,6 +201,41 @@ CAR[0,+1] = +48.06%
 게다가 주가 수익률은 신호 대비 잡음이 커서 저신호 환경에서 부스팅은 노이즈를 학습한다.
 데이터에 맞지 않는 모델을 붙이는 것보다 배제 근거를 남기는 편이 낫다고 판단했다.
 
+### SQL 레이어와 교차 검증
+
+산출물을 SQLite 로 적재하고 같은 계산을 SQL 로 다시 수행했다 ([`sql/`](sql/)).
+
+| 파일 | 내용 |
+|---|---|
+| [`01_schema.sql`](sql/01_schema.sql) | 5개 테이블 정의. 복합 기본키·외래키·인덱스 |
+| [`02_features.sql`](sql/02_features.sql) | 윈도우 함수(`LAG`, `PARTITION BY`)로 파생 지표 재계산 |
+| [`03_validation.sql`](sql/03_validation.sql) | 무결성 검사 9종 |
+| [`04_analysis.sql`](sql/04_analysis.sql) | 집계 6종 (`NTILE`, 조건부 집계, CTE) |
+
+**기본키가 데이터 사고를 막는다.** `financials` 는 `(code, year, quarter)` 를 복합 기본키로 두어
+"한 종목의 한 분기는 한 행"을 DB가 강제한다. 중복 적재나 잘못된 조인으로 행이 불어나는
+문제가 애초에 발생하지 않는다.
+
+**pandas 와 SQL 을 대조했다.** `shift(4)` 로 만든 전년 대비 지표를
+`LAG(revenue, 4) OVER (PARTITION BY code ORDER BY year, quarter)` 로 다시 계산하고
+두 결과를 비교했다.
+
+```
+[통과] pandas 대조 — 매출 성장률
+[통과] pandas 대조 — 영업이익률 변화폭
+[통과] pandas 대조 — 추세 이탈도
+```
+
+추세이탈도는 pandas 쪽이 `numpy.polyfit` 으로 직선을 적합한 반면,
+SQL 쪽은 4점 최소제곱해를 정리한 가중합으로 계산했다.
+
+```
+예측값 = -0.5 × (4분기 전) + 0.5 × (2분기 전) + 1.0 × (1분기 전)
+```
+
+구현 경로가 전혀 다른데 오차 `1e-9` 이내로 일치했다.
+서로 독립적인 두 방법이 같은 답을 냈으므로 어느 쪽 구현도 신뢰할 수 있다.
+
 ---
 
 ## 결과 상세
@@ -267,7 +302,7 @@ CAR[0,+20]   추세이탈도
 ## 재현
 
 ```bash
-pip install pandas numpy statsmodels scikit-learn matplotlib pykrx finance-datareader python-dotenv
+pip install -r requirements.txt
 ```
 
 ```bash
@@ -304,7 +339,15 @@ cd src && for f in 0*.py 1*.py; do python "$f"; done
 │   ├── 09_validate_car.py       CAR 검증
 │   ├── 10_build_features.py     특성 생성
 │   ├── 11_regression.py         OLS + Lasso
-│   └── 12_visualize.py          결과 시각화
+│   ├── 12_visualize.py          결과 시각화
+│   ├── 13_build_report.py       HTML 보고서 생성
+│   └── 14_build_db.py           SQLite 적재 + SQL 검증·집계
+├── sql/
+│   ├── 01_schema.sql            테이블 정의
+│   ├── 02_features.sql          윈도우 함수 파생 지표
+│   ├── 03_validation.sql        무결성 검사
+│   └── 04_analysis.sql          집계 쿼리
 ├── data/                        중간·최종 산출물
-└── figures/                     결과 그림
+├── figures/                     결과 그림
+└── report.html                  분석 보고서 (13번 스크립트 산출물)
 ```
