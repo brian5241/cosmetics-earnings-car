@@ -7,6 +7,7 @@
 > 두 곳에 흩어진 데이터를 시점 정합성을 지켜 이어붙이고, 계산 결과를 검산하고,
 > 그 시점에 알 수 없었던 정보가 섞이지 않게 막는 과정이 전체 작업의 대부분을 차지했다.
 
+- **탐색 과정**: [`notebooks/01_eda.ipynb`](notebooks/01_eda.ipynb) — 데이터를 실제로 들여다본 기록 (실행 없이 바로 보임)
 - 비전문가용 설명: [`docs/explainer.md`](docs/explainer.md)
 - 설계·의사결정 전체 기록: [`docs/design-log.md`](docs/design-log.md)
 
@@ -347,7 +348,12 @@ cd src && for f in 0*.py 1*.py; do python "$f"; done
 │   ├── 02_features.sql          윈도우 함수 파생 지표
 │   ├── 03_validation.sql        무결성 검사
 │   └── 04_analysis.sql          집계 쿼리
+├── notebooks/
+│   └── 01_eda.ipynb             탐색적 데이터 분석 (실행 결과 포함)
 ├── data/                        중간·최종 산출물
 ├── figures/                     결과 그림
 └── report.html                  분석 보고서 (13번 스크립트 산출물)
 ```
+
+노트북은 **탐색 기록**이고 파이프라인은 `src/` 스크립트다.
+노트북은 데이터를 다시 만들지 않고 저장된 CSV만 읽으므로, 둘이 어긋날 일이 없다.
