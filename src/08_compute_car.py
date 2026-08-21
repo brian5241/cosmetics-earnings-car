@@ -35,6 +35,9 @@ from config import DATA_DIR, ESTIMATION_WINDOW, EVENT_WINDOWS
 # 2팩터 모델을 쓰기 위한 최소 추정 관측치. 미달이면 시장조정모델로 폴백한다.
 MIN_ESTIMATION_OBS = 60
 
+# 시각화용 AR 경로를 남길 구간 (발표일 기준 거래일)
+PATH_LO, PATH_HI = -20, 20
+
 
 def build_returns() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     """수익률 행렬과 시장수익률을 준비한다.
@@ -88,7 +91,7 @@ def main():
 
     est_lo, est_hi = ESTIMATION_WINDOW
 
-    records = []
+    records, paths = [], []
     for _, ev in events.iterrows():
         code = ev["종목코드"]
         r_i = ret[code].dropna()
@@ -167,11 +170,23 @@ def main():
             # 구간 내 결측이 있으면 신뢰할 수 없다
             rec[wname] = seg.sum() if seg.notna().all() else np.nan
 
+        # --- AR 경로 저장 ---
+        # 시각화(평균 CAR 궤적)에서 재계산하지 않도록 여기서 남긴다.
+        # 직교화 계수까지 다시 만들 필요가 없어진다.
+        path = {}
+        for k in range(PATH_LO, PATH_HI + 1):
+            j = t0 + k
+            path[k] = ar.iloc[j] if 0 <= j < len(dates) else np.nan
+        paths.append({"이벤트키": f"{code}_{ev['분기']}", **path})
+
+        rec["이벤트키"] = f"{code}_{ev['분기']}"
         rec["사유"] = ""
         records.append(rec)
 
     car = pd.DataFrame(records)
     car.to_csv(DATA_DIR / "car.csv", index=False, encoding="utf-8-sig")
+    pd.DataFrame(paths).to_csv(DATA_DIR / "ar_paths.csv",
+                               index=False, encoding="utf-8-sig")
 
     # ---------------- 검증 ----------------
     print()
